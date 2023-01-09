@@ -68,9 +68,8 @@ def client():
         
             # code for stop the robot if the user want 
             stop_btn = input("If you want to stop the robot press 'S' and ENTER else press only ENTER: ")
-            #stop_bt = select.select([sys.stdin], [], [], 15)[0]
-            #if stop_bt:
-                #value = sys.stdin.readline().rstrip()
+           
+	    # check if the input is correct 
             if (stop_btn == "S"):
 	        # cancel the goal and stop the robot 
                 print("The robot has been stopped!")
