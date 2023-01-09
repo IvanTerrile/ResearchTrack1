@@ -20,7 +20,7 @@ Inside the scripts folder, there will be 6 nodes:
 - `input_from_user.py` is the file which implements the action client node. The node asks the user to enter two coordinates (x,y) or to cancel them.After,it publishes the robot position and velocity as a custom message on the /*Position_velocity* topic, getting the values from the /*odom* topic. The structure of the node is described in the suqsequent flowchart:
   
 <figure>
-<img src="Flowchart.png" alt="Flowchart" style="width:100%">
+<img src="Flowchart.jpg" alt="Flowchart" style="width:100%">
 <figcaption align = "center"></figcaption>
 </figure>
 <br/><br/><br/>
