@@ -33,40 +33,40 @@ Inside the scripts folder, there will be 6 nodes:
 
 To get the information about the number of goals reached and canceled, write on a command window:
     
-    ```bash
-    rosservice call service
-    ```
+```bash
+$ rosservice call service
+```
 
 ## Installation and how to run of the code
 
 To run the master:
     
-    ```bash
-    roscore 
-    ```
+```bash
+$ roscore 
+```
 
 To install the module, you need to go inside the `src` folder of your ROS workspace and clone the assignment folder:
 
-    ```bash
-    git clone https://github.com/Ivanterry00/ResearchTrack1/tree/main/SecondAssignment
-    ```
+```bash
+$ git clone https://github.com/Ivanterry00/ResearchTrack1/tree/main/SecondAssignment
+```
 and from the root directory of your ROS workspace run the command:
 
-    ```bash
-    catkin_make
-    ```
+```bash
+$ catkin_make
+```
     
 To run the program, it is neccessary to install **xterm**:
     
-    ```bash
-    sudo apt-get install xterm
-    ```
+```bash
+$ sudo apt-get install xterm
+```
     
 To run the code:
 
-    ```bash
-    roslaunch assignment_2_2022 assignment1.launch
-    ```
+```bash
+$ roslaunch assignment_2_2022 assignment1.launch
+```
 
 ### Possible improvements
 
