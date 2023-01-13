@@ -1,9 +1,9 @@
-# RT_assignment_2
+# ROS Robotics Simulator
 
 ## Ivan Terrile s4851947
 
-### Description
-The user is able to control a mobile robot in 3D simulation environment called *Gazebo*.
+### Second Research Track Assignment 
+In this project the user is able to control a mobile robot in 3D simulation environment called *Gazebo*.
 To do this the assignment requires to implement:
 - (a) A node that implements an action client, allowing the user to set a target (x, y) or to cancel it. The node
 also publishes the robot position and velocity as a custom message (x,y, vel_x, vel_z), by relying on the values
@@ -32,31 +32,41 @@ Inside the scripts folder, there will be 6 nodes:
 - `service.py` is the file which implements a service node.When the node is called,it prints how many times a desired position was reached or cancelled.
 
 To get the information about the number of goals reached and canceled, write on a command window:
-
+    
+    ```bash
     rosservice call service
+    ```
 
-## Installation and run of the program
+## Installation and how to run of the code
 
 To run the master:
-
+    
+    ```bash
     roscore 
+    ```
 
 To install the module, you need to go inside the `src` folder of your ROS workspace and clone the assignment folder:
 
+    ```bash
     git clone https://github.com/Ivanterry00/ResearchTrack1/tree/main/SecondAssignment
-    
+    ```
 and from the root directory of your ROS workspace run the command:
 
+    ```bash
     catkin_make
-
+    ```
+    
 To run the program, it is neccessary to install **xterm**:
-
+    
+    ```bash
     sudo apt-get install xterm
-
+    ```
+    
 To run the code:
 
+    ```bash
     roslaunch assignment_2_2022 assignment1.launch
-
+    ```
 
 ### Possible improvements
 
