@@ -43,8 +43,8 @@ To run the master:
 
 To install the module, you need to go inside the `src` folder of your ROS workspace and clone the assignment folder:
 
-    git clone https://github.com/Miryru/RT_assignment_2
-
+    git clone https://github.com/Ivanterry00/ResearchTrack1/tree/main/SecondAssignment
+    
 and from the root directory of your ROS workspace run the command:
 
     catkin_make
