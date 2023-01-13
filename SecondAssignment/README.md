@@ -1,8 +1,8 @@
 # RT_assignment_2
 
-Ivan Terrile s4851947
+## Ivan Terrile s4851947
 
-## Description
+### Description
 The user is able to control a mobile robot in 3D simulation environment called *Gazebo*.
 To do this the assignment requires to implement:
 - (a) A node that implements an action client, allowing the user to set a target (x, y) or to cancel it. The node
@@ -12,7 +12,7 @@ published on the topic /odom.
 - (c) A node that subscribes to the robot’s position and velocity  and prints the
 distance of the robot from the target and the robot’s average speed. 
 
-## Nodes
+### Nodes of ROS program
 
 Inside the scripts folder, there will be 6 nodes:
 
@@ -35,7 +35,7 @@ To get the information about the number of goals reached and canceled, write on 
 
     rosservice call service
 
-## Install and run
+## Installation and run of the program
 
 To run the master:
 
@@ -49,7 +49,7 @@ and from the root directory of your ROS workspace run the command:
 
     catkin_make
 
-To run the program,It was neccessary to install **xterm**:
+To run the program, it is neccessary to install **xterm**:
 
     sudo apt-get install xterm
 
@@ -58,15 +58,12 @@ To run the code:
     roslaunch assignment_2_2022 assignment1.launch
 
 
+### Possible improvements
 
-## Possible improvements
+Here are some possible improvements that could be made to the program:
 
-- It's not clear where the desired position is. It could be useful adding a graphical marker which highlights the right point.
+- increase the speed of movement and rotation of the robot;
 
-- Adding a limitation to the coordinates's values.Infact when the user inserts some value out of space of the simulation,the robot doesn't respect the code instructions,so the program doesn't work properly.
+- give limitations to the coordinates entered by the user (define the limits of the map) and then carry out the necessary checks on the user's input;
 
-- Improve the performance of the bug0 algorithm:give the robot the possibility of turning right when the end of the obstacle is nearer in the right direction.
-
-- Improve the robot's performance:increase the robot linear velocity and robot angular velocity.
-
-
+- prohibit some coordinates (those where there are obstacles, for example walls)
