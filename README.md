@@ -1,7 +1,7 @@
 # ResearchTrack1
-Research Track University Course Repository
+Research Track University of Genoa Course Repository
 
-This is a repository for all the project of Research Track 1 University Course
+This is a repository for all the project of Research Track 1 University of Genoa Course
 
 ------------------------------------------------------------------------------
 
