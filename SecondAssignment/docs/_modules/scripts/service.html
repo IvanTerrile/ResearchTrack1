@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.service &mdash; Research Track II, First Assignment 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Research Track II, First Assignment
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Research Track II, First Assignment</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.service</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.service</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This node provides a service and subscribes to the result topic to keep track of the number of goals cancelled</span>
+<span class="sd">   and goals reached. It implements a service called &#39;service&#39; that returns the current count of cancelled and reached goals.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">#! /usr/bin/env python</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">assignment_2_2022.srv</span> <span class="kn">import</span> <span class="n">goal</span><span class="p">,</span> <span class="n">goalResponse</span>
+<span class="kn">import</span> <span class="nn">actionlib</span>
+<span class="kn">import</span> <span class="nn">actionlib.msg</span>
+<span class="kn">import</span> <span class="nn">assignment_2_2022.msg</span>
+
+<span class="c1"># variables to store how many times goals were cancelled or reached</span>
+<span class="n">cancelled</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">reached</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="c1"># callback for result subscriber</span>
+<div class="viewcode-block" id="result"><a class="viewcode-back" href="../../index.html#scripts.service.result">[docs]</a><span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback function for the result subscriber.</span>
+<span class="sd">       This function is called whenever a PlanningActionResult message is received. It updates the count of</span>
+<span class="sd">       cancelled and reached goals based on the status of the result.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        msg (PlanningActionResult): The PlanningActionResult message containing the status of the goal.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+	
+    <span class="c1"># initialize cancelled and reached as global variables </span>
+    <span class="k">global</span> <span class="n">cancelled</span><span class="p">,</span> <span class="n">reached</span>
+	
+    <span class="c1"># get the status of the result from the message</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">status</span>
+	
+    <span class="c1"># if status is equal 2, the goal was preempted (cancelled)</span>
+    <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">cancelled</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="c1"># if status is equal 3, the goal was reached</span>
+    <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">reached</span> <span class="o">+=</span> <span class="mi">1</span></div>
+		
+<span class="c1"># the service function, use for implement the service </span>
+<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../../index.html#scripts.service.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">req</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Service callback function.</span>
+<span class="sd">       This function is called when the &#39;service&#39; service is requested. It returns the current count of</span>
+<span class="sd">       cancelled and reached goals as the response.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        req (goalRequest): The request object of the &#39;service&#39; service.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        goalResponse: The response object containing the count of cancelled and reached goals.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># initialize cancelled and reached as global variables </span>
+    <span class="k">global</span> <span class="n">cancelled</span><span class="p">,</span> <span class="n">reached</span>
+	
+    <span class="c1"># return the response of the service </span>
+    <span class="k">return</span> <span class="n">goalResponse</span><span class="p">(</span><span class="n">reached</span><span class="p">,</span> <span class="n">cancelled</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../index.html#scripts.service.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main entry point of the ROS service node.</span>
+<span class="sd">       This function initializes the ROS node, creates the &#39;service&#39; service, and subscribes to the &#39;/reaching_goal/result&#39;</span>
+<span class="sd">       topic to receive the status of the goal. It enters a spin loop to continue receiving messages and handling service requests.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize the node</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;service&#39;</span><span class="p">)</span>
+	
+    <span class="c1"># create the service</span>
+    <span class="n">srv</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Service</span><span class="p">(</span><span class="s1">&#39;service&#39;</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">get_data</span><span class="p">)</span>
+	
+    <span class="c1"># initialize the subscriber for the result of the goal</span>
+    <span class="n">sub_result</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s1">&#39;/reaching_goal/result&#39;</span><span class="p">,</span> <span class="n">assignment_2_2022</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">PlanningActionResult</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+	
+    <span class="c1"># wait</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span></div>
+	
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Ivan Terrile.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
