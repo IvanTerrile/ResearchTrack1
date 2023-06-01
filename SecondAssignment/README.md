@@ -1,6 +1,6 @@
 # ROS Robotics Simulator
 
-## Ivan Terrile s4851947
+## Ivan Terrile
 
 ### Second Research Track Assignment 
 In this project the user is able to control a mobile robot in 3D simulation environment called *Gazebo*.
