@@ -12,6 +12,8 @@ published on the topic /odom.
 - (c) A node that subscribes to the robot’s position and velocity  and prints the
 distance of the robot from the target and the robot’s average speed. 
 
+Below you can see the structure of all the program but you can also see the documentation at this link: [https://ivanterry00.github.io/ResearchTrack1/](https://ivanterry00.github.io/ResearchTrack1/)
+
 ### Nodes of ROS program
 
 Inside the scripts folder, there will be 6 nodes:
