@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.input_from_user &mdash; Research Track II, First Assignment 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Research Track II, First Assignment
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Research Track II, First Assignment</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.input_from_user</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.input_from_user</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This node interacts with the user to control a robot&#39;s movement inside a virtual arena.</span>
+<span class="sd">   The user is prompted to enter coordinates (x, y) for the robot to reach. The node sends</span>
+<span class="sd">   these coordinates as goals to an action server. The node also subscribes to the /odom topic</span>
+<span class="sd">   to receive the robot&#39;s odometry information, and publishes the robot&#39;s position and velocity</span>
+<span class="sd">   on the /Position_velocity topic. The user can choose to stop the robot by entering &#39;S&#39;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">actionlib</span>
+<span class="kn">import</span> <span class="nn">actionlib.msg</span>
+<span class="kn">import</span> <span class="nn">assignment_2_2022.msg</span>
+<span class="kn">from</span> <span class="nn">std_srvs.srv</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">select</span>
+<span class="kn">from</span> <span class="nn">nav_msgs.msg</span> <span class="kn">import</span> <span class="n">Odometry</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">Twist</span>
+<span class="kn">from</span> <span class="nn">assignment_2_2022.msg</span> <span class="kn">import</span> <span class="n">Pos_vel</span>
+
+<div class="viewcode-block" id="publish_values"><a class="viewcode-back" href="../../index.html#scripts.input_from_user.publish_values">[docs]</a><span class="k">def</span> <span class="nf">publish_values</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Publishes the position and velocity values extracted from an Odometry message.</span>
+<span class="sd">       This function receives an Odometry message and extracts the position (x, y) and velocity (linear x, linear y) information.</span>
+<span class="sd">       It creates a custom message of type Pos_vel and publishes it on the /Position_velocity topic.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        msg (Odometry): The Odometry message containing position and velocity information.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># recall the global publisher as pub</span>
+    <span class="k">global</span> <span class="n">pub</span>
+    
+    <span class="c1"># get the postion from the message</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span>
+	
+    <span class="c1"># get the twist from the message</span>
+    <span class="n">velocity</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">linear</span>
+	
+    <span class="c1"># create custom message (of the type corresponding to the file in the msg folder)</span>
+    <span class="n">position_and_velocity</span> <span class="o">=</span> <span class="n">Pos_vel</span><span class="p">()</span>
+	
+    <span class="c1"># assign the parameters of the custom message</span>
+    <span class="n">position_and_velocity</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">x</span>
+    <span class="n">position_and_velocity</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">y</span>
+    <span class="n">position_and_velocity</span><span class="o">.</span><span class="n">velX</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">.</span><span class="n">x</span>
+    <span class="n">position_and_velocity</span><span class="o">.</span><span class="n">velY</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">.</span><span class="n">y</span>
+	
+    <span class="c1"># Publish the custom message</span>
+    <span class="n">pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">position_and_velocity</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="client"><a class="viewcode-back" href="../../index.html#scripts.input_from_user.client">[docs]</a><span class="k">def</span> <span class="nf">client</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interacts with the user and sends goals to the action server.</span>
+<span class="sd">       This function creates an action client for the /reaching_goal action server and waits for it to start.</span>
+<span class="sd">       It then enters a loop where it prompts the user to enter the coordinates (x, y) that the robot must reach.</span>
+<span class="sd">       If the input is valid, it creates a goal message with the target coordinates and sends it to the action server.</span>
+<span class="sd">       The user can also choose to stop the robot by entering &#39;S&#39; and pressing Enter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># create the action client</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">actionlib</span><span class="o">.</span><span class="n">SimpleActionClient</span><span class="p">(</span><span class="s1">&#39;/reaching_goal&#39;</span><span class="p">,</span> <span class="n">assignment_2_2022</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">PlanningAction</span><span class="p">)</span>
+    <span class="c1"># wait for the server to be started</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">wait_for_server</span><span class="p">()</span>
+    
+    <span class="c1"># print a message for the user </span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">This is a program that moves a robot (a toy car) inside a virtual arena.&quot;</span> 
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The user is asked to enter a point to reach via coordinates and subsequently,&quot;</span> 
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if desired, the point where the robot is to be sent can be changed or the robot&quot;</span> 
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">can be stopped.&quot;</span><span class="p">)</span>
+    
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+        
+        <span class="c1"># give input from the utent </span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ENTER THE COORDINATES (x,y) BELOW THAT THE ROBOT MUST REACH&quot;</span><span class="p">)</span>
+        <span class="n">positionX</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Set a target x: &quot;</span><span class="p">)</span>
+        <span class="n">positionY</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Set a target y: &quot;</span><span class="p">)</span>
+        
+        <span class="c1"># check if the input is correct </span>
+        <span class="k">if</span> <span class="n">positionX</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="n">positionY</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="n">positionX</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">positionX</span><span class="p">)</span>
+            <span class="n">positionY</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">positionY</span><span class="p">)</span>
+    	
+            <span class="c1"># create the goal to send to the server</span>
+            <span class="n">goal</span> <span class="o">=</span> <span class="n">assignment_2_2022</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">PlanningGoal</span><span class="p">()</span>
+            <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">positionX</span>
+            <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">positionY</span>
+    
+            <span class="c1"># send the goal to the action server</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+        
+            <span class="c1"># code for stop the robot if the user want </span>
+            <span class="n">stop_btn</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;If you want to stop the robot press &#39;S&#39; and ENTER else press only ENTER: &quot;</span><span class="p">)</span>
+           
+	    <span class="c1"># check if the input is correct </span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">stop_btn</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">):</span>
+	        <span class="c1"># cancel the goal and stop the robot </span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The robot has been stopped!&quot;</span><span class="p">)</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">cancel_goal</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">stop_btn</span> <span class="o">!=</span> <span class="s2">&quot;S&quot;</span> <span class="ow">and</span> <span class="n">stop_btn</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: input for stop the robot not correct!&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: input not valid!&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../index.html#scripts.input_from_user.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main entry point of the ROS input_from_user node.</span>
+<span class="sd">       This function initializes the ROS node, creates a publisher for the /Position_velocity topic,</span>
+<span class="sd">       and subscribes to the /odom topic to receive odometry information.</span>
+<span class="sd">       It then calls the client function to start the interaction with the user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize the node </span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;input_from_user&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># create a global publisher, call as pub</span>
+    <span class="k">global</span> <span class="n">pub</span>
+    
+    <span class="c1"># initialize the publisher to send a msg (using the velocity and the position as parameters)</span>
+    <span class="n">pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s2">&quot;/Position_velocity&quot;</span><span class="p">,</span> <span class="n">Pos_vel</span><span class="p">,</span> <span class="n">queue_size</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># initialize the subscriber to get from Odom the velocity and the position parameters</span>
+    <span class="n">sub_from_Odom</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s2">&quot;/odom&quot;</span><span class="p">,</span> <span class="n">Odometry</span><span class="p">,</span> <span class="n">publish_values</span><span class="p">)</span>
+    
+    <span class="c1"># call the client function</span>
+    <span class="n">client</span><span class="p">()</span></div>
+      
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Ivan Terrile.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
