@@ -50,7 +50,7 @@ $ roscore
 To install the module, you need to go inside the `src` folder of your ROS workspace and clone the assignment folder:
 
 ```bash
-$ git clone https://github.com/Ivanterry00/ResearchTrack1/tree/main/SecondAssignment
+$ git clone https://github.com/IvanTerrile/ResearchTrack1/tree/main/SecondAssignment
 ```
 and from the root directory of your ROS workspace run the command:
 
